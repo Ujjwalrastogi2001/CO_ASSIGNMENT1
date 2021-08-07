@@ -2,7 +2,9 @@ from allvar import *
 
 global line
 
-
+#handle overflow case 
+#what to do of overflow
+#what to store in overflow case
 
 def validregister(r):
     global error
@@ -31,23 +33,82 @@ def add():
         return " "
     if(validregister(inst[i][1])== True and validregister(inst[i][2]) == True and validregister(inst[i][3]) == True):
         sum = reg[inst[i][3]][0]+reg[inst[i][2]][0]
-        reg[inst[i][1]][0] = sum
+        
         if(sum > 2^16):
             overflow = 1
+        else:
+            reg[inst[i][1]][0] = sum
     return "00"+reg[inst[i][1]][1]+reg[inst[i][2]][1]+reg[inst[i][3]][1]
 
 
 
 def sub():
-    pass
+    global inst
+    global binlist
+    global reg
+    global line
+    global overflow
+    global reg
+    i = line
+    if(len(inst[i]) != 4):
+        error.append(["Inviaid Syntax",i+1])
+        return " "
+    if(validregister(inst[i][1])== True and validregister(inst[i][2]) == True and validregister(inst[i][3]) == True):
+        subt = reg[inst[i][2]][0]-reg[inst[i][3]][0]
+        if(subt < 0):
+            overflow = 1
+        else:
+            reg[inst[i][1]][0] = subt
+    return "00"+reg[inst[i][1]][1]+reg[inst[i][2]][1]+reg[inst[i][3]][1]
+
+
+def mul():
+    global inst
+    global binlist
+    global reg
+    global line
+    global overflow
+    global reg
+    i = line
+    if(len(inst[i]) != 4):
+        error.append(["Inviaid Syntax",i+1])
+        return " "
+    if(validregister(inst[i][1])== True and validregister(inst[i][2]) == True and validregister(inst[i][3]) == True):
+        mult = reg[inst[i][3]][0]*reg[inst[i][2]][0]
+        if(mult > 2^16):
+            overflow = 1
+        else:
+            reg[inst[i][1]][0] = sum
+    return "00"+reg[inst[i][1]][1]+reg[inst[i][2]][1]+reg[inst[i][3]][1]
+
+
+def div():
+    global inst
+    global binlist
+    global reg
+    global line
+    global overflow
+    global reg
+    i = line
+    if(len(inst[i]) != 3):
+        error.append(["Inviaid Syntax",i+1])
+        return " "
+    if(validregister(inst[i][1])== True and validregister(inst[i][2]) == True):
+        quotient = reg[inst[i][2]][0]%reg[inst[i][3]][0]
+        remainder = reg[inst[i][2]][0]+reg[inst[i][3]][0] - reg[inst[i][2]][0]
+        reg["R0"][0] = quotient 
+        reg["R1"][0] = remainder
+    return "00"+reg[inst[i][1]][1]+reg[inst[i][2]][1]+reg[inst[i][3]][1]
 
 
 def store():
     pass
-def hlt():
-    return " "
 
-dictionfun={"00000":add, "10011":hlt}
+
+def hlt():
+    return "00000000000"
+
+dictionfun={"00000":add,"00001":sub,"00110":mul,"00111":div ,"10011":hlt}
 
 '''
 inst list of user input  

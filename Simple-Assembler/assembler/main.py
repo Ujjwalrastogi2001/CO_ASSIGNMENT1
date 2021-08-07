@@ -79,7 +79,7 @@ def mainfun():
     #label defined check
     for i in range(0,len(inst)):
         global labeld
-        if(isvalid(inst[i][0])):
+        if(isvalid(inst[i][0]) == False):
             labelc.append([inst[i][0],i])
 
     #check if both numbers match
