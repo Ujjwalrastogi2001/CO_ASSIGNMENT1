@@ -1,5 +1,53 @@
 from allvar import *
 
+global line
+
+
+
+def validregister(r):
+    global error
+    global line
+    i = line
+    if(r in ("R0","R1","R2","R3","R4","R5","R6")):
+        return True
+    elif( r == "FALGS"):
+        error.append(["Invalid use of FLAGS register",i+1])
+        return False
+    else:
+        error.append(["Invalid register name",i+1])
+        return False
+        
+
+def add():
+    global inst
+    global binlist
+    global reg
+    global line
+    global overflow
+    global reg
+    i = line
+    if(len(inst[i]) != 4):
+        error.append(["Inviaid Syntax",i+1])
+        return " "
+    if(validregister(inst[i][1])== True and validregister(inst[i][2]) == True and validregister(inst[i][3]) == True):
+        sum = reg[inst[i][3]][0]+reg[inst[i][2]][0]
+        reg[inst[i][1]][0] = sum
+        if(sum > 2^16):
+            overflow = 1
+    return "00"+reg[inst[i][1]][1]+reg[inst[i][2]][1]+reg[inst[i][3]][1]
+
+
+
+def sub():
+    pass
+
+
+def store():
+    pass
+def hlt():
+    return " "
+
+dictionfun={"00000":add, "10011":hlt}
 
 '''
 inst list of user input  
@@ -31,6 +79,8 @@ def variableaddress():
 
 
 def getbin(i):           #inst is the ith element of inst list
+    global line 
+    line = i
     global error
     flagvalid = isvalid(inst[i][0])         #isvalid
     if(inst[i][0] == 'var'):        #if a var statment then return
@@ -39,9 +89,74 @@ def getbin(i):           #inst is the ith element of inst list
         error.append(["Invalid Opcode on line", i+1])       #if not append in error list and return
         return 
     else:           #else call respective functions 
-        callfunctions(i)
+        callfunctions()
         return
 
+
+
+
+
+
+
+
+#checked for validity of opcode and label 
+#now call respenctive functions and update binlist
+def callfunctions():
+    global inst
+    global binlist
+    global dictionfun 
+    global line 
+    i = line
+    bin  = ' '
+    op = getopcode(inst[i][0])
+    bin = bin+op
+    #assign numbers to them
+
+    rema = dictionfun[op]()
+    print(bin)
+    print(rema)
+    print(bin)
+    
+    if(rema != ""):
+        bin = bin + rema
+        binlist.append(bin)
+
+
+
+    
+
+
+#check last statment is halt
+def checklasthalt():
+    flag = True
+    global inst
+    global error
+    if(inst[len(inst)-1][0] != "hlt"):
+        flag = False
+    if(inst[len(inst)-1][0] == "hlt"):
+        if (len(inst[len(inst)-1]) != 1):
+            flag =  False
+    if(flag == False):
+        error.append(["last statment is not halt",len(inst)-1])
+
+
+
+
+
+
+
+
+def getregcode():
+    pass
+
+
+
+
+
+#get opcode from dictionary ISA 
+def getopcode(opcode):
+    global isa
+    return isa[opcode]
 
 
 
@@ -52,49 +167,7 @@ def isvalid(opcode):
         return True
     else:
         return False
-
-
-
-
-#checked for validity of opcode and label 
-#now call respenctive functions and update binlist
-def callfunctions(i):
-    global inst
-    global binlist
-    bin  = ''
-    op = getopcode(inst[i][0])
-    bin.append(op)
-    #assign numbers to them
-    #if else opcode
-    #dict function call 
-    if(op == "00000"):
-        add()
-
-    
-
-
-#check last statment is halt
-def checklasthalt():
-    flag = True
-    global inst
-    global error
-    if(inst[len(inst)-1][1] != "hlt"):
-        flag = False
-    if(inst[len(inst)-1][1] == "hlt"):
-        if (len(inst[len(inst)-1]) != 1):
-            flag =  False
-    if(flag == False):
-        error.append(["last statment is not halt",len(inst)-1])
-
-
-
-
-
-#get opcode from dictionary ISA 
-def getopcode(opcode):
-    global isa
-    return isa[opcode][0]
-
+        
 
 #error not sure 
 #check if all called label are defined label 
@@ -108,17 +181,6 @@ def checklabelmatch():
             error.append(["Label is not defined",i[1]])
     
 
-def getregcode():
-    pass
 
-def add():
-    pass
-
-def sub():
-    pass
-
-
-def store():
-    pass
 
 

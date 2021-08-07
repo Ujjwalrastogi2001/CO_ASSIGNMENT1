@@ -2,7 +2,7 @@
 # group members 
 # Mohit Sharma - 2020086
 # ujjwal Rastogi
-# Yash -
+# Yash - 2020551
 
 
 
@@ -38,8 +38,7 @@ def mainfun():
 
     while(True):
         try:
-            st = input()    
-            count = count+1        #user input 
+            st = input()          #user input 
             if(count > 256):
                 overflow = 1
                 break
@@ -50,17 +49,21 @@ def mainfun():
             if(st[0]== "EOF"):
                 break
             #till here
+
+            
             
                             
             inst.append(st)
         except EOFError:
             break
+
+        count = count+1  
     
     for i in range(0,len(inst)):
         #variable check
         if(inst[i][0]== "var"):
             if(len(inst[i]) == 2):
-                variables.append([st[1],i])
+                variables.append([inst[i][1],i])
             else:
                 error.append(["Invalid instruction on line",i+1])
 
@@ -93,6 +96,8 @@ def mainfun():
 
     for i in range(0,len(inst)):
         getbin(i)
+
+    print(binlist)
 
 
 mainfun()
