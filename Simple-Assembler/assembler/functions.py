@@ -1,7 +1,6 @@
 from allvar import *
 
 global line
-line=0
 
 #handle overflow case 
 #what to do of overflow
@@ -90,7 +89,7 @@ def div():
     global overflow
     global reg
     if(len(inst[line]) != 3):
-        error.append(["Inviaid Syntax",i+1])
+        error.append(["Inviaid Syntax",line+1])
         return " "
     if(validregister(inst[line][1])== True and validregister(inst[line][2]) == True):
         quotient = reg[inst[line][2]][0]%reg[inst[line][3]][0]
@@ -141,6 +140,7 @@ def variableaddress():
 def getbin(i):           #inst is the ith element of inst list
     global line 
     global error
+    line = i
     flagvalid = isvalid(inst[line][0])         #isvalid
     if(inst[line][0] == 'var'):        #if a var statment then return
         return
@@ -154,10 +154,6 @@ def getbin(i):           #inst is the ith element of inst list
 
 
 
-
-
-
-
 #checked for validity of opcode and label 
 #now call respenctive functions and update binlist
 def callfunctions():
@@ -165,14 +161,11 @@ def callfunctions():
     global binlist
     global dictionfun 
     global line 
-    bin  = ' '
+    bin  = ''
     op = getopcode(inst[line][0])
     bin = bin+op
     
     rema = dictionfun[op]()
-    print(bin)
-    print(rema)
-    print(bin)
     
     if(rema != ""):
         bin = bin + rema

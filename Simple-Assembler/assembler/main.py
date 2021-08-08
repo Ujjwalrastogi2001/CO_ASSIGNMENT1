@@ -50,10 +50,7 @@ def mainfun():
             if(st[0]== "EOF"):
                 break
             #till here
-
-            
-            
-                            
+                       
             inst.append(st)
         except EOFError:
             break
