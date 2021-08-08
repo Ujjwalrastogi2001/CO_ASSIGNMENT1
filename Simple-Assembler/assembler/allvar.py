@@ -7,7 +7,7 @@ code = []      #list of all code lines after removing var ig do't need it
 count = 0     #instructions stored
 count1 = 0      #total instructions - total var = total code lines 
 
-variables = []  #variable list
+variables = {} 
 
 labeld = []     #labeld list of defined label
 labelc = []     #labelc list of called label

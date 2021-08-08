@@ -4,7 +4,7 @@
 # ujjwal Rastogi
 # Yash - 2020551
 
-
+#all variable must be defined at the statting 
 
 from functions import *
 from allvar import *
@@ -34,13 +34,14 @@ def mainfun():
     global binlist
     global error
     global labeld
+    global labelc
     binstr = ''
 
     while(True):
         try:
             st = input()          #user input 
             if(count > 256):
-                overflow = 1
+                error.append(["Memory overflow",count+1])
                 break
             st = st.strip()
             st = st.split(' ')          #slpit instructions
@@ -63,7 +64,7 @@ def mainfun():
         #variable check
         if(inst[i][0]== "var"):
             if(len(inst[i]) == 2):
-                variables.append([inst[i][1],i])
+                variables[inst[i][1]]=i
             else:
                 error.append(["Invalid instruction on line",i+1])
 
@@ -73,14 +74,16 @@ def mainfun():
                 labelc.append(inst[i][1])
             else:
                 error.append(["Invalid instruction on line",i+1])
+        
+        #label defined check
+        if(isvalid(inst[i][0]) == False):               #confirm kr 
+            if(inst[i][0][len(inst[i][0])-1] == ":"):
+                labelc.append([inst[i][0],i])
+            else:
+                error.append(["Invalid instruction on line",i+1])
 
 
-    #while loop mei add kr de
-    #label defined check
-    for i in range(0,len(inst)):
-        global labeld
-        if(isvalid(inst[i][0]) == False):
-            labelc.append([inst[i][0],i])
+            
 
     #check if both numbers match
     checklabelmatch()
@@ -97,7 +100,7 @@ def mainfun():
     for i in range(0,len(inst)):
         getbin(i)
 
-    print(binlist)
+    printbin()
 
 
 mainfun()

@@ -1,6 +1,7 @@
 from allvar import *
 
 global line
+line=0
 
 #handle overflow case 
 #what to do of overflow
@@ -9,14 +10,13 @@ global line
 def validregister(r):
     global error
     global line
-    i = line
     if(r in ("R0","R1","R2","R3","R4","R5","R6")):
         return True
-    elif( r == "FALGS"):
-        error.append(["Invalid use of FLAGS register",i+1])
+    elif( r == "FLAGS"):
+        error.append(["Invalid use of FLAGS register",line+1])
         return False
     else:
-        error.append(["Invalid register name",i+1])
+        error.append(["Invalid register name",line+1])      
         return False
         
 
@@ -27,18 +27,18 @@ def add():
     global line
     global overflow
     global reg
-    i = line
-    if(len(inst[i]) != 4):
-        error.append(["Inviaid Syntax",i+1])
+    if(len(inst[line]) != 4):
+        error.append(["Inviaid Syntax",line+1])
         return " "
-    if(validregister(inst[i][1])== True and validregister(inst[i][2]) == True and validregister(inst[i][3]) == True):
-        sum = reg[inst[i][3]][0]+reg[inst[i][2]][0]
+    if(validregister(inst[line][1])== True and validregister(inst[line][2]) == True and validregister(inst[line][3]) == True):
+        sum = reg[inst[line][3]][0]+reg[inst[line][2]][0]
         
-        if(sum > 2^16):
+        if(sum > 2^16):   
             overflow = 1
+            reg[inst[line][1]][0] = sum - 2^16
         else:
-            reg[inst[i][1]][0] = sum
-    return "00"+reg[inst[i][1]][1]+reg[inst[i][2]][1]+reg[inst[i][3]][1]
+            reg[inst[line][1]][0] = sum
+    return "00"+reg[inst[line][1]][1]+reg[inst[line][2]][1]+reg[inst[line][3]][1]
 
 
 
@@ -49,17 +49,17 @@ def sub():
     global line
     global overflow
     global reg
-    i = line
-    if(len(inst[i]) != 4):
-        error.append(["Inviaid Syntax",i+1])
+    if(len(inst[line]) != 4):
+        error.append(["Inviaid Syntax",line+1])
         return " "
-    if(validregister(inst[i][1])== True and validregister(inst[i][2]) == True and validregister(inst[i][3]) == True):
-        subt = reg[inst[i][2]][0]-reg[inst[i][3]][0]
+    if(validregister(inst[line][1])== True and validregister(inst[line][2]) == True and validregister(inst[line][3]) == True):
+        subt = reg[inst[line][2]][0]-reg[inst[line][3]][0]
         if(subt < 0):
             overflow = 1
+            reg[inst[line][1]][0] = 0
         else:
-            reg[inst[i][1]][0] = subt
-    return "00"+reg[inst[i][1]][1]+reg[inst[i][2]][1]+reg[inst[i][3]][1]
+            reg[inst[line][1]][0] = subt
+    return "00"+reg[inst[line][1]][1]+reg[inst[line][2]][1]+reg[inst[line][3]][1]
 
 
 def mul():
@@ -69,17 +69,17 @@ def mul():
     global line
     global overflow
     global reg
-    i = line
-    if(len(inst[i]) != 4):
-        error.append(["Inviaid Syntax",i+1])
+    if(len(inst[line]) != 4):
+        error.append(["Inviaid Syntax",line+1])
         return " "
-    if(validregister(inst[i][1])== True and validregister(inst[i][2]) == True and validregister(inst[i][3]) == True):
-        mult = reg[inst[i][3]][0]*reg[inst[i][2]][0]
+    if(validregister(inst[line][1])== True and validregister(inst[line][2]) == True and validregister(inst[line][3]) == True):
+        mult = reg[inst[line][3]][0]*reg[inst[line][2]][0]
         if(mult > 2^16):
             overflow = 1
+            reg[inst[line][1]][0] = mul%2^10
         else:
-            reg[inst[i][1]][0] = sum
-    return "00"+reg[inst[i][1]][1]+reg[inst[i][2]][1]+reg[inst[i][3]][1]
+            reg[inst[line][1]][0] = mul
+    return "00"+reg[inst[line][1]][1]+reg[inst[line][2]][1]+reg[inst[line][3]][1]
 
 
 def div():
@@ -89,16 +89,15 @@ def div():
     global line
     global overflow
     global reg
-    i = line
-    if(len(inst[i]) != 3):
+    if(len(inst[line]) != 3):
         error.append(["Inviaid Syntax",i+1])
         return " "
-    if(validregister(inst[i][1])== True and validregister(inst[i][2]) == True):
-        quotient = reg[inst[i][2]][0]%reg[inst[i][3]][0]
-        remainder = reg[inst[i][2]][0]+reg[inst[i][3]][0] - reg[inst[i][2]][0]
+    if(validregister(inst[line][1])== True and validregister(inst[line][2]) == True):
+        quotient = reg[inst[line][2]][0]%reg[inst[line][3]][0]
+        remainder = reg[inst[line][2]][0]+reg[inst[line][3]][0] - reg[inst[line][2]][0]
         reg["R0"][0] = quotient 
         reg["R1"][0] = remainder
-    return "00"+reg[inst[i][1]][1]+reg[inst[i][2]][1]+reg[inst[i][3]][1]
+    return "00"+reg[inst[line][1]][1]+reg[inst[line][2]][1]+reg[inst[line][3]][1]
 
 
 def store():
@@ -127,13 +126,13 @@ labelc = []     #labelc list of called label
 #append at the third position of the inner list
 def variableaddress():
     global variables
-    global count1
+    global count
     format(10, "b")
     for i in range(0,len(variables)): 
         s = ''                                  #store address
-        c = count1+1+i
+        c = count+1+i
         s = s+ format(c, "b")
-        variables[i].append(s)      #append address in variables list
+        variables[line].append(s)      #append address in variables list
 
     # [item[1] for item in L] need it later ignore now
 
@@ -141,10 +140,9 @@ def variableaddress():
 
 def getbin(i):           #inst is the ith element of inst list
     global line 
-    line = i
     global error
-    flagvalid = isvalid(inst[i][0])         #isvalid
-    if(inst[i][0] == 'var'):        #if a var statment then return
+    flagvalid = isvalid(inst[line][0])         #isvalid
+    if(inst[line][0] == 'var'):        #if a var statment then return
         return
     if(flagvalid == False):         #check if a valid opcode 
         error.append(["Invalid Opcode on line", i+1])       #if not append in error list and return
@@ -167,12 +165,10 @@ def callfunctions():
     global binlist
     global dictionfun 
     global line 
-    i = line
     bin  = ' '
-    op = getopcode(inst[i][0])
+    op = getopcode(inst[line][0])
     bin = bin+op
-    #assign numbers to them
-
+    
     rema = dictionfun[op]()
     print(bin)
     print(rema)
@@ -199,10 +195,6 @@ def checklasthalt():
             flag =  False
     if(flag == False):
         error.append(["last statment is not halt",len(inst)-1])
-
-
-
-
 
 
 
@@ -242,6 +234,16 @@ def checklabelmatch():
             error.append(["Label is not defined",i[1]])
     
 
-
-
-
+#print at the end
+def printbin():
+    global error
+    global binlist
+    l = 256 - len(binlist)      #  total 256 
+    for i in range(0,l):
+        binlist.append("0000000000000000")
+    if(len(error)==0):          #no errors
+        for i in range(0,len(binlist)):
+            print(binlist[i])
+    else:
+       for i in range(0,len(error)):
+            print(error[i]) 
