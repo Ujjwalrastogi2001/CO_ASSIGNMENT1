@@ -9,8 +9,8 @@ count1 = 0      #total instructions - total var = total code lines
 
 variables = {} 
 
-labeld = []     #labeld list of defined label
-labelc = []     #labelc list of called label
+labeld = {}   #labeld dictionary of defined label
+labelc = {}    #labelc dictionary of called label
 
 binlist = []       #binary representation
 error = []      #errors
