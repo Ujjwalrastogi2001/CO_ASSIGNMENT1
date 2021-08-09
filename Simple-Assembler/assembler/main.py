@@ -6,7 +6,6 @@
 
 #all variable must be defined at the statting 
 """
-<<<<<<< HEAD
 Command
 to run a custom test case, without using automatedTesting:
 path/to/Simple-Assembler/run < path/to/input/assembly/file >
@@ -19,25 +18,23 @@ path/to/output/binary/file
 
 
 
-"""
 
 
-=======
+
 add: add R1 R2 R3
 hlt
 EOF
 
 1st line error repeating
-"""
->>>>>>> a53297d76b019ed3fb7945758fea4a7b962dd5e2
 
+"""
 from functions import *
 from allvar import *
 
 
 
-'''
-inst list of instructions user input
+
+#inst list of instructions user input
 count = 0     #instructions stored
 variables = []  #variable list
 label = []      #label list
@@ -46,7 +43,7 @@ error = []      #errors
 labeld = []     #labeld list of defined label
 labelc = []     #labelc list of called label
 
-'''
+
 
 
 def mainfun():

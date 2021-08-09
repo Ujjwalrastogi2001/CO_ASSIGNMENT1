@@ -2,38 +2,67 @@ from allvar import *
 
 global line
 
-<<<<<<< HEAD
-=======
-'''
-inst list of user input  
+
+#inst list of user input  
 overflow = False 
 count = 0     #instructions stored
 variables = []  #variable list
 label = []      #label list
 binlist = []       #binary representation
 error = []      #errors
-labeld = []     #labeld list of defined label
-labelc = []     #labelc list of called label
+labeld = {}     #labeld list of defined label
+labelc = {}     #labelc list of called label
+global dictionfun
+dictionfun={"add":"A","sub":"A","mul":"A","div":"C" ,"hlt":"F","mov":("B","C")}
 
-'''
->>>>>>> a53297d76b019ed3fb7945758fea4a7b962dd5e2
+
+
 
 #handle overflow case 
 #what to do of overflow
 #what to store in overflow case
 
-def validregister(r):
+
+def checkValue(r):
     global error
     global line
     if(r in ("R0","R1","R2","R3","R4","R5","R6")):
-        return True
+        return "R"
     elif( r == "FLAGS"):
         error.append(["Invalid use of FLAGS register",line+1])
-        return False
+        return "E"
+    elif(r[0] == "$"):
+        return "I"
     else:
         error.append(["Invalid register name",line+1])      
-        return False
+        return "E"
         
+
+def convertBin(keyword,var1=None,var2=None,var3=None):
+    global isa
+    type=dictionfun[keyword]
+    if(keyword=="mov"):
+        if(checkValue(var2)=="I"):
+            type="B"
+        else:
+            type="C"
+    if(type=="A"):                                                   #R2=2 R3=1
+        return isa(keyword)+"00"+reg[var1]+reg[var2]+reg[var3]  
+    if(type=="B"):
+        return isa(keyword)+reg[var1]+toBinary(var2)
+    if(type=="C"):
+        return isa(keyword)+"00000"+reg[var1]+reg[var2]
+    if(type=="D"):
+        return isa(keyword)+reg[var1]+mem(var2)
+    if(type=="E"):
+        return isa(keyword)+"000"+mem(var1)
+    if(type=="F"):
+        return isa(keyword)+"00000000000"
+    
+
+
+    
+
 
 def add():
     global inst
@@ -45,7 +74,7 @@ def add():
     if(len(inst[line]) != 4):
         error.append(["Inviaid Syntax",line+1])
         return " "
-    if(validregister(inst[line][1])== True and validregister(inst[line][2]) == True and validregister(inst[line][3]) == True):
+    if(checkValue(inst[line][1])== "R" and checkValue(inst[line][2]) == "R" and checkValue(inst[line][3]) == "R"):
         sum = reg[inst[line][3]][0]+reg[inst[line][2]][0]
         
         if(sum > 2^16):   
@@ -53,7 +82,7 @@ def add():
             reg[inst[line][1]][0] = sum - 2^16
         else:
             reg[inst[line][1]][0] = sum
-    return "00"+reg[inst[line][1]][1]+reg[inst[line][2]][1]+reg[inst[line][3]][1]
+    return "0000000"+reg[inst[line][1]][1]+reg[inst[line][2]][1]+reg[inst[line][3]][1]
 
 
 
@@ -67,14 +96,14 @@ def sub():
     if(len(inst[line]) != 4):
         error.append(["Inviaid Syntax",line+1])
         return " "
-    if(validregister(inst[line][1])== True and validregister(inst[line][2]) == True and validregister(inst[line][3]) == True):
+    if(checkValue(inst[line][1])== "R" and checkValue(inst[line][2]) == "R" and checkValue(inst[line][3]) == "R"):
         subt = reg[inst[line][2]][0]-reg[inst[line][3]][0]
         if(subt < 0):
             overflow = 1
             reg[inst[line][1]][0] = 0
         else:
             reg[inst[line][1]][0] = subt
-    return "00"+reg[inst[line][1]][1]+reg[inst[line][2]][1]+reg[inst[line][3]][1]
+    return "0000100"+reg[inst[line][1]][1]+reg[inst[line][2]][1]+reg[inst[line][3]][1]
 
 
 def mul():
@@ -87,14 +116,14 @@ def mul():
     if(len(inst[line]) != 4):
         error.append(["Inviaid Syntax",line+1])
         return " "
-    if(validregister(inst[line][1])== True and validregister(inst[line][2]) == True and validregister(inst[line][3]) == True):
+    if(checkValue(inst[line][1])== "R" and checkValue(inst[line][2]) == "R" and checkValue(inst[line][3]) == "R"):
         mult = reg[inst[line][3]][0]*reg[inst[line][2]][0]
         if(mult > 2^16):
             overflow = 1
             reg[inst[line][1]][0] = mul%2^10
         else:
             reg[inst[line][1]][0] = mul
-    return "00"+reg[inst[line][1]][1]+reg[inst[line][2]][1]+reg[inst[line][3]][1]
+    return "0011000"+reg[inst[line][1]][1]+reg[inst[line][2]][1]+reg[inst[line][3]][1]
 
 
 def div():
@@ -105,18 +134,14 @@ def div():
     global overflow
     global reg
     if(len(inst[line]) != 3):
-<<<<<<< HEAD
-        error.append(["Inviaid Syntax",list+1])
-=======
         error.append(["Inviaid Syntax",line+1])
->>>>>>> a53297d76b019ed3fb7945758fea4a7b962dd5e2
         return " "
-    if(validregister(inst[line][1])== True and validregister(inst[line][2]) == True):
+    if(checkValue(inst[line][1])== "R" and checkValue(inst[line][2]) == "R"):
         quotient = reg[inst[line][2]][0]%reg[inst[line][3]][0]
         remainder = reg[inst[line][2]][0]+reg[inst[line][3]][0] - reg[inst[line][2]][0]
         reg["R0"][0] = quotient 
         reg["R1"][0] = remainder
-    return "00"+reg[inst[line][1]][1]+reg[inst[line][2]][1]+reg[inst[line][3]][1]
+    return "0011100"+reg[inst[line][1]][1]+reg[inst[line][2]][1]+reg[inst[line][3]][1]
 
 
 def store():
@@ -126,10 +151,30 @@ def store():
 def hlt():
     return "00000000000"
 
-dictionfun={"00000":add,"00001":sub,"00110":mul,"00111":div ,"10011":hlt}
+def mov():
+    global inst
+    global binlist
+    global reg
+    global line
+    global overflow
+    global reg
+    cr=inst[line]
+    #check if the second register contains a value or not (if not can 0 be stored)
+    if(len(cr!=3)):
+        error.append(["Invalid Syntax",line+1])
+        return " "
+    if(checkValue(cr[1])== "R" and checkValue(cr[2]) == "R"):  #both are registers
+        reg[cr[1]][0]=reg[cr[2]][0]
+        return "0001100000"+reg[cr[1]][1]+reg[cr[2]][1]
+    elif(checkValue(cr[1])== "R" and checkValue(cr[2]) == "I"):        #one value is immediate
+        reg[cr[1]][0]=cr[2]
+        return "00010000"+toBinary(cr[2])
 
 
 
+
+def checkValue():
+    pass
 #find the address of variable
 #append at the third position of the inner list
 def variableaddress():
@@ -164,30 +209,32 @@ def getbin(i):           #inst is the ith element of inst list
 
 
 
-<<<<<<< HEAD
-=======
-
->>>>>>> a53297d76b019ed3fb7945758fea4a7b962dd5e2
 #checked for validity of opcode and label 
 #now call respenctive functions and update binlist
 def callfunctions():
     global inst
     global binlist
-    global dictionfun 
+    global dictionfun
     global line 
-    bin  = ''
-    op = getopcode(inst[line][0])
-    bin = bin+op
+    dictionfun[3]="as"
+    #bin  = ''
+    # op = getopcode(inst[line][0])
+    # bin = bin+op
+    keyword=inst[line][0]
+    if(keyword in dictionfun.keys):   #the first word is instruction
+        if(len(inst[line])==2):
+            rema =convertBin(keyword,inst[line][1])
+        elif(len(inst[line]==3)):
+            rema =convertBin(keyword,inst[line][1],inst[line][2])
+        elif(len(inst[line]==4)):
+            rema =convertBin(keyword,inst[line][1],inst[line][2],inst[line][3])
+        else:
+            error.append(["Inviaid Syntax",line+1])
     
-    rema = dictionfun[op]()
-<<<<<<< HEAD
     #print(rema)
-=======
->>>>>>> a53297d76b019ed3fb7945758fea4a7b962dd5e2
     
     if(rema != ""):
-        bin = bin + rema
-        binlist.append(bin)
+        binlist.append(rema)
 
 
 
