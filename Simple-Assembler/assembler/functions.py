@@ -2,6 +2,21 @@ from allvar import *
 
 global line
 
+<<<<<<< HEAD
+=======
+'''
+inst list of user input  
+overflow = False 
+count = 0     #instructions stored
+variables = []  #variable list
+label = []      #label list
+binlist = []       #binary representation
+error = []      #errors
+labeld = []     #labeld list of defined label
+labelc = []     #labelc list of called label
+
+'''
+>>>>>>> a53297d76b019ed3fb7945758fea4a7b962dd5e2
 
 #handle overflow case 
 #what to do of overflow
@@ -90,7 +105,11 @@ def div():
     global overflow
     global reg
     if(len(inst[line]) != 3):
+<<<<<<< HEAD
         error.append(["Inviaid Syntax",list+1])
+=======
+        error.append(["Inviaid Syntax",line+1])
+>>>>>>> a53297d76b019ed3fb7945758fea4a7b962dd5e2
         return " "
     if(validregister(inst[line][1])== True and validregister(inst[line][2]) == True):
         quotient = reg[inst[line][2]][0]%reg[inst[line][3]][0]
@@ -109,18 +128,7 @@ def hlt():
 
 dictionfun={"00000":add,"00001":sub,"00110":mul,"00111":div ,"10011":hlt}
 
-'''
-inst list of user input  
-overflow = False 
-count = 0     #instructions stored
-variables = []  #variable list
-label = []      #label list
-binlist = []       #binary representation
-error = []      #errors
-labeld = []     #labeld list of defined label
-labelc = []     #labelc list of called label
 
-'''
 
 #find the address of variable
 #append at the third position of the inner list
@@ -145,6 +153,8 @@ def getbin(i):           #inst is the ith element of inst list
     flagvalid = isvalid(inst[line][0])         #isvalid
     if(inst[line][0] == 'var'):        #if a var statment then return
         return
+    if(inst[line][0] in labeld.keys()):
+        return
     if(flagvalid == False):         #check if a valid opcode 
         error.append(["Invalid Opcode on line", i+1])       #if not append in error list and return
         return 
@@ -154,6 +164,10 @@ def getbin(i):           #inst is the ith element of inst list
 
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> a53297d76b019ed3fb7945758fea4a7b962dd5e2
 #checked for validity of opcode and label 
 #now call respenctive functions and update binlist
 def callfunctions():
@@ -166,7 +180,10 @@ def callfunctions():
     bin = bin+op
     
     rema = dictionfun[op]()
+<<<<<<< HEAD
     #print(rema)
+=======
+>>>>>>> a53297d76b019ed3fb7945758fea4a7b962dd5e2
     
     if(rema != ""):
         bin = bin + rema
@@ -223,8 +240,8 @@ def checklabelmatch():
     global labelc
     global labeld
     global error
-    for i in labelc:
-        if( i[0]+':' not in labeld):
+    for i in labelc.keys():
+        if( i[0]+':' not in labeld.keys()):
             error.append(["Label is not defined",i[1]])
     
 

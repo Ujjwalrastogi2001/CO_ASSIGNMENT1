@@ -6,6 +6,7 @@
 
 #all variable must be defined at the statting 
 """
+<<<<<<< HEAD
 Command
 to run a custom test case, without using automatedTesting:
 path/to/Simple-Assembler/run < path/to/input/assembly/file >
@@ -21,6 +22,14 @@ path/to/output/binary/file
 """
 
 
+=======
+add: add R1 R2 R3
+hlt
+EOF
+
+1st line error repeating
+"""
+>>>>>>> a53297d76b019ed3fb7945758fea4a7b962dd5e2
 
 from functions import *
 from allvar import *
@@ -66,10 +75,7 @@ def mainfun():
             if(st[0]== "EOF"):
                 break
             #till here
-
-            
-            
-                            
+                       
             inst.append(st)
         except EOFError:
             break
@@ -87,16 +93,19 @@ def mainfun():
         #label called check
         if(inst[i][0] in ("jmp","jlt","jgt","je")):
             if(len(inst[i]) == 2):
-                labelc.append(inst[i][1])
+                labelc[inst[i][1]]=i
             else:
                 error.append(["Invalid instruction on line",i+1])
         
         #label defined check
-        if(isvalid(inst[i][0]) == False):               #confirm kr 
-            if(inst[i][0][len(inst[i][0])-1] == ":"):
-                labelc.append([inst[i][0],i])
+        if(isvalid(inst[i][0]) == False):
+            if(isvalid(inst[i][0][0:len(inst[i][0])-1]) == False):              
+                if(inst[i][0][len(inst[i][0])-1] == ":"):
+                    labelc[inst[i][1]]=i
+                else:
+                    error.append(["Invalid instruction on line",i+1])
             else:
-                error.append(["Invalid instruction on line",i+1])
+                error.append(["Syntax error on line",i+1])
 
 
             
