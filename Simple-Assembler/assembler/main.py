@@ -5,6 +5,22 @@
 # Yash - 2020551
 
 #all variable must be defined at the statting 
+"""
+Command
+to run a custom test case, without using automatedTesting:
+path/to/Simple-Assembler/run < path/to/input/assembly/file >
+path/to/output/binary/file
+
+
+\automatedTesting\run
+\Simple-Assembler\assembler\sample.txt
+\Simple-Assembler\assembler\output.txt
+
+
+
+"""
+
+
 
 from functions import *
 from allvar import *
