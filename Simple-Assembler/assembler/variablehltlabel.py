@@ -5,6 +5,8 @@ def isvalidopcode(opcode):
     global validlist
     if opcode in validinst:
         return True
+    elif opcode=="var":
+        return True
     else:
         return False
 
@@ -60,13 +62,14 @@ def checkvar():
 
 # find the address of variable
 # append at the third position of the inner list
-def variableaddress():
+def variableaddress(co):
     global variables
     global count
+    count=co
     format(10, "b")
     for i in variables.keys():
         s = ''  # store address
-        c = count+1+variables[i]
+        c = count+variables[i]
         s = s + format(c, "b")
         while(len(s) != 8):
             s = '0'+s
@@ -74,49 +77,20 @@ def variableaddress():
     # [item[1] for item in L] need it later ignore now
 
 
-# check last statment is halt
-def checklasthalt():
-    flagb = True
-    global inst
-    global error
-    if(inst[len(inst)-1][0] != "hlt"):  # last statment is not hlt
-        flagb = False
-    if(inst[len(inst)-1][0] == "hlt"):  # last statment is hlt
-        if (len(inst[len(inst)-1]) != 1):  # len of instruction is not 2
-            error.append(["Invalid instruction on line", len(inst)-1])
-            flagb = False
-    for i in range(0, len(inst)):  # lablel case label: hlt
-        if(inst[i][0] in labeld.keys()):  # if 1st value is a label
-            if(inst[i][1] == "hlt"):  # second is hlt
-                if (len(inst[i]) != 2):  # len of instruction is not 2
-                    error.append(["Invalid instruction on line", i])
-                elif(flagb == True):  # multiple hlt case
-                    error.append(["Multiple halt instructions", i])
-                else:  # if all cases fail then flagb = true
-                    flagb = True
-    if(flagb == False):  # hlt is not last statment
-        error.append(
-            ["last statment is not halt, hlt present at ", len(inst)-1])
-        for i in range(0, len(inst)):
-            if(inst[i][0] == "hlt"):
-                if (len(inst[i]) != 1):
-                    error.append(["Invalid instruction on line", i])
-                elif(flagb == True):
-                    error.append(["Multiple halt instructions", i])
-                else:
-                    flagb = True
-
 
 # check if all called label are defined label
 # not necessary that all defined label is called
 def checklabelmatch():
+    label={}
     global labelc
     global labeld
     global error
     for i in labelc.keys():
         if(i+':' not in labeld.keys()):
             error.append(["Label is not defined", i[1]])
-            labelc.pop(i)
+        else:
+            label[i]=labelc[i]
+    labelc=label
 
 #error
 def checklabel():
@@ -128,7 +102,7 @@ def checklabel():
         # label called check
         if(inst[i][0] in ("jmp", "jlt", "jgt", "je")):  # if branch instructions
             if(len(inst[i]) == 2):  # length od instruction 2
-                if(alphanum(inst[i][1][0, len(inst[i][1])-2]) == False):  # is not valid
+                if(alphanum(inst[i][1][0:len(inst[i][1])-1]) == False):  # is not valid
                     error.append(["Invalid label name", i+1])
                     flagb = False
                 labelc[inst[i][1]] = i
@@ -144,3 +118,48 @@ def checklabel():
                     error.append(["Invalid instruction on line", i+1])
             else:
                 error.append(["Syntax error on line", i+1])
+
+
+
+
+#add r1 r2 r3 error aa rha h
+# check last statment is halt
+def checklasthalt():
+    flagb = False
+    flagmul = False
+    present = -1
+    global inst
+    global error
+    if(inst[len(inst)-1][0] != "hlt"):  # last statment is not hlt
+        error.append(["last statment is not halt ", len(inst)])
+        flagb = False
+    if(inst[len(inst)-1][0] == "hlt"):  # last statment is hlt
+        if (len(inst[len(inst)-1]) != 1):  # len of instruction is not 2
+            error.append(["Invalid instruction on line", len(inst)-1])
+            #flagb = False
+        # for i in range(0, len(inst)):  # lablel case label: hlt
+        #     if(inst[i][0] in labeld.keys()):  # if 1st value is a label
+        #         if(inst[i][1] == "hlt"):  # second is hlt
+        #             if (len(inst[i]) != 2):  # len of instruction is not 2
+        #                 error.append(["Invalid instruction on line", i+1])
+        #             elif(flagb == True):  # multiple hlt case
+        #                 error.append(["Multiple halt instructions", i+1])
+        #                 flagmul = True
+        #             else:  # if all cases fail then flagb = true
+        #                 flagb = True
+        #                 present = i
+        # for i in range(0, len(inst)):  # lablel case label: hlt
+        #     if(inst[i][0] == "hlt"):
+        #         if (len(inst[i]) != 1):
+        #             error.append(["Invalid instruction on line", i+1])
+        #         elif(flagb == True):
+        #             error.append(["Multiple halt instructions", i+1])
+        #             flagmul = True
+        #         else:
+        #             flagb = True
+        # if(flagb == True and flagmul == False):  # hlt is not last statment
+        #     error.append(["last statment is not halt, hlt present at ", present+1])
+        # if(flagb == True and flagmul == True): 
+        #     error.append(["last statment is not halt, last hlt present at ", present+1])
+
+

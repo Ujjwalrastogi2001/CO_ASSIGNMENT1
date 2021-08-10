@@ -4,7 +4,6 @@
 # ujjwal Rastogi
 # Yash - 2020551
 
-#all variable must be defined at the statting 
 """
 Command
 to run a custom test case, without using automatedTesting:
@@ -16,49 +15,49 @@ path/to/output/binary/file
 \Simple-Assembler\assembler\sample.txt
 \Simple-Assembler\assembler\output.txt
 
-
-
-
-
-
-add: add R1 R2 R3
-hlt
-EOF
-
-1st line error repeating
-
 """
+
+
+
+
+#variable name and label name are same not sure
+#add sum calculate ku kr rhe h flag ka use toh simulator mei h 
+#check multiple label with same name 
+#dictionary of valid labels
+#label name should not be a register
+#label name should be alpha numberic
+#A label name consists of alphanumeric characters and underscores.
+#check at starting for valid opcode and halt then 
+#if label then check at 1st index for opcode
+#pass list to all arguments else define new functions for label  case don't want that
+
+
 from functions import *
 from allvar import *
+from variablehltlabel import *
 
 
 
-
-#inst list of instructions user input
-count = 0     #instructions stored
-variables = []  #variable list
-label = []      #label list
-binlist = []       #binary representation
-error = []      #errors
-labeld = []     #labeld list of defined label
-labelc = []     #labelc list of called label
-
-
-
+def printerror():
+    #check for error in hlt variable label if yes then stop     
+    if(len(error) != 0):
+        for i in range(0,len(error)):
+            print(error[i][0]+", "+str(error[i][1]))
+        return 0 if len(error) == 0 else 1
 
 def mainfun():
-    
-    global inst
-    global overflow
+    """global inst
+    global flag
     global count
     global variables
-    global label
     global binlist
     global error
     global labeld
-    global labelc
-    binstr = ''
+    global labelc"""
+    count = 0
+    
 
+    #get all user input in list inst
     while(True):
         try:
             st = input()          #user input 
@@ -72,58 +71,43 @@ def mainfun():
             if(st[0]== "EOF"):
                 break
             #till here
-                       
-            inst.append(st)
+            if(st != [""]):         
+                inst.append(st)
+                count = count+1 
+
         except EOFError:
             break
+     
 
-        count = count+1  
-    
-    for i in range(0,len(inst)):
-        #variable check
-        if(inst[i][0]== "var"):
-            if(len(inst[i]) == 2):
-                variables[inst[i][1]]=i
-            else:
-                error.append(["Invalid instruction on line",i+1])
+    #check for validity of variables 
+    checkvar()
+    if(printerror() == 1):
+        return
 
-        #label called check
-        if(inst[i][0] in ("jmp","jlt","jgt","je")):
-            if(len(inst[i]) == 2):
-                labelc[inst[i][1]]=i
-            else:
-                error.append(["Invalid instruction on line",i+1])
-        
-        #label defined check
-        if(isvalid(inst[i][0]) == False):
-            if(isvalid(inst[i][0][0:len(inst[i][0])-1]) == False):              
-                if(inst[i][0][len(inst[i][0])-1] == ":"):
-                    labelc[inst[i][1]]=i
-                else:
-                    error.append(["Invalid instruction on line",i+1])
-            else:
-                error.append(["Syntax error on line",i+1])
-
-
-            
-
+    #get all labels 
+    checklabel()
     #check if both numbers match
     checklabelmatch()
-
+    #check if last statment halt
     checklasthalt()
+    
+    if(printerror() == 1):
+        return
 
     #total instructions - total var
     global count1
     count1 = count - len(variables)
-
-    variableaddress()
-            
+    #assign adderss to variables
+    variableaddress(count1)
 
     for i in range(0,len(inst)):
         getbin(i)
 
+    #print bin
     printbin()
+    return
+    
 
-
+#main function
 mainfun()
 

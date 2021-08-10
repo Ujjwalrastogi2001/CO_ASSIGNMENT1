@@ -5,15 +5,14 @@ global line
 
 #inst list of user input  
 overflow = False 
-count = 0     #instructions stored
-variables = []  #variable list
+
 label = []      #label list
 binlist = []       #binary representation
-error = []      #errors
-labeld = {}     #labeld list of defined label
-labelc = {}     #labelc list of called label
+
 global dictionfun
-dictionfun={"add":"A","sub":"A","mul":"A","div":"C" ,"hlt":"F","mov":("B","C")}
+dictionfun={"add":"A","sub":"A","mul":"A","div":"C" ,"hlt":"F","mov":("B","C"),"st":"D","ld":"D","rs":"B","ls":"B","xor":"A","or":"A","and": "A", "not": "C","cmp":"C","jmp":"E","jlt":"E","jgt":"E","je":"E"}
+
+
 
 
 
@@ -21,8 +20,6 @@ dictionfun={"add":"A","sub":"A","mul":"A","div":"C" ,"hlt":"F","mov":("B","C")}
 #handle overflow case 
 #what to do of overflow
 #what to store in overflow case
-
-
 def checkValue(r):
     global error
     global line
@@ -31,6 +28,7 @@ def checkValue(r):
     elif( r == "FLAGS"):
         error.append(["Invalid use of FLAGS register",line+1])
         return "E"
+    # check overflow error in immediate >255
     elif(r[0] == "$"):
         return "I"
     else:
@@ -38,26 +36,35 @@ def checkValue(r):
         return "E"
         
 
+
 def convertBin(keyword,var1=None,var2=None,var3=None):
     global isa
     type=dictionfun[keyword]
     if(keyword=="mov"):
         if(checkValue(var2)=="I"):
+            keyword="movi"
             type="B"
         else:
+            keyword="movr"
             type="C"
-    if(type=="A"):                                                   #R2=2 R3=1
-        return isa(keyword)+"00"+reg[var1]+reg[var2]+reg[var3]  
-    if(type=="B"):
-        return isa(keyword)+reg[var1]+toBinary(var2)
-    if(type=="C"):
-        return isa(keyword)+"00000"+reg[var1]+reg[var2]
-    if(type=="D"):
-        return isa(keyword)+reg[var1]+mem(var2)
+
+    #check for valid registers
+    #if(var1!=None): checkValue(var1)
+    if(type=="A" and checkValue(var1) == "R" and checkValue(var2) == "R"and checkValue(var3) == "R"):
+        return isa[keyword]+"00"+reg[var1]+reg[var2]+reg[var3]  
+    if(type=="B" and checkValue(var1) == "R" and checkValue(var2) == "I"):
+        st = format(int(var2[1::]),"b")
+        while(len(st) != 8):
+            st = '0'+st
+        return isa[keyword]+reg[var1]+st
+    if(type=="C" and checkValue(var1) == "R" and checkValue(var2) == "R"):
+        return isa[keyword]+"00000"+reg[var1]+reg[var2]
+    if(type=="D" and checkValue(var1)):
+        return isa[keyword]+reg[var1]+variables[var2][1]
     if(type=="E"):
-        return isa(keyword)+"000"+mem(var1)
+        return isa[keyword]+"000"+variables[var1][1]
     if(type=="F"):
-        return isa(keyword)+"00000000000"
+        return isa[keyword]+"00000000000"
     
 
 
@@ -173,19 +180,18 @@ def mov():
 
 
 
-def checkValue():
-    pass
+
 #find the address of variable
 #append at the third position of the inner list
-def variableaddress():
-    global variables
-    global count
-    format(10, "b")
-    for i in range(0,len(variables)): 
-        s = ''                                  #store address
-        c = count+1+i
-        s = s+ format(c, "b")
-        variables[line].append(s)      #append address in variables list
+# def variableaddress():
+#     global variables
+#     global count
+#     format(10, "b")
+#     for i in range(0,len(variables)): 
+#         s = ''                                  #store address
+#         c = count+1+varia
+#         s = s+ format(c, "b")
+#         variables[line].append(s)      #append address in variables list
 
     # [item[1] for item in L] need it later ignore now
 
@@ -216,52 +222,27 @@ def callfunctions():
     global binlist
     global dictionfun
     global line 
-    dictionfun[3]="as"
     #bin  = ''
     # op = getopcode(inst[line][0])
     # bin = bin+op
     keyword=inst[line][0]
-    if(keyword in dictionfun.keys):   #the first word is instruction
+    rema=""
+    if(keyword in dictionfun.keys()):   #the first word is instruction
         if(len(inst[line])==2):
             rema =convertBin(keyword,inst[line][1])
-        elif(len(inst[line]==3)):
+        elif(len(inst[line])==3):
             rema =convertBin(keyword,inst[line][1],inst[line][2])
-        elif(len(inst[line]==4)):
+        elif(len(inst[line])==4):
             rema =convertBin(keyword,inst[line][1],inst[line][2],inst[line][3])
+        elif(len(inst[line])==1):
+            rema=convertBin(keyword)
         else:
-            error.append(["Inviaid Syntax",line+1])
+            error.append(["Invalid Syntax",line+1])
     
     #print(rema)
-    
     if(rema != ""):
         binlist.append(rema)
-
-
-
-    
-
-
-#check last statment is halt
-def checklasthalt():
-    flag = True
-    global inst
-    global error
-    if(inst[len(inst)-1][0] != "hlt"):
-        flag = False
-    if(inst[len(inst)-1][0] == "hlt"):
-        if (len(inst[len(inst)-1]) != 1):
-            flag =  False
-    if(flag == False):
-        error.append(["last statment is not halt",len(inst)-1])
-
-
-
-
-def getregcode():
-    pass
-
-
-
+    return
 
 
 #get opcode from dictionary ISA 
@@ -280,28 +261,15 @@ def isvalid(opcode):
         return False
         
 
-#error not sure 
-#check if all called label are defined label 
-#not necessary that all defined label is called
-def checklabelmatch():
-    global labelc
-    global labeld
-    global error
-    for i in labelc.keys():
-        if( i[0]+':' not in labeld.keys()):
-            error.append(["Label is not defined",i[1]])
-    
-
 #print at the end
 def printbin():
     global error
     global binlist
     l = 256 - len(binlist)      #  total 256 
-    for i in range(0,l):
-        binlist.append("0000000000000000")
     if(len(error)==0):          #no errors
         for i in range(0,len(binlist)):
             print(binlist[i])
     else:
        for i in range(0,len(error)):
-            print(error[i]) 
+            print(error[i][0]+", "+str(error[i][1]))
+    return 0
