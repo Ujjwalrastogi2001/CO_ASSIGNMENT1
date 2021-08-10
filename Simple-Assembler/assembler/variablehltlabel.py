@@ -56,15 +56,16 @@ def checkvar():
 
 # find the address of variable
 # append at the third position of the inner list
-def variableaddress(count1):              
+def variableaddress(count1):   
+          
     for i in variables.keys():
         s = ''  # store address
-        c = count1+1+variables[i]
+        c = count1+variables[i]
         s = s + format(c, "b")
-        while(len(s) != 8):
+        while(len(s) < 8):
             s = '0'+s
         variables[i] = [variables[i], s]  # append address in variables list
-
+    return
 
 
 
@@ -117,9 +118,9 @@ def checklabelmatch():
 def labeladdress():
     for i in labeld.keys():
         s = ''  # store address
-        c = labeld[i]+1
+        c = labeld[i]
         s = s + format(c, "b")
-        while(len(s) != 8):
+        while(len(s) < 8):
             s = '0'+s
         labeld[i] =  s
 

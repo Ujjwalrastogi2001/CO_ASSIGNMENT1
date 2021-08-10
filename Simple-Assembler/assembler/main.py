@@ -35,7 +35,9 @@ def mainfun():
                 error.append(["Memory overflow",count+1])
                 break
             st = st.strip()
-            st = st.split(' ')          #slpit instructions
+            st = st.replace("\t"," ")
+            st = st.split(' ')  #slpit instructions
+            
         
             #delete these line
             if(st[0]== "EOF"):
