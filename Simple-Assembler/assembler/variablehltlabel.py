@@ -20,6 +20,7 @@ def alphanum(s):
     return flagb
 
 
+
 # check for validity of variables
 # variable not at starting, repeating, invalid, a regisgter name used, a valid opcode used are handled
 def checkvar():
@@ -54,10 +55,10 @@ def checkvar():
     return
 
 
+
 # find the address of variable
 # append at the third position of the inner list
-def variableaddress(count1):   
-          
+def variableaddress(count1):       
     for i in variables.keys():
         s = ''  # store address
         c = count1+variables[i]
@@ -89,14 +90,10 @@ def checklasthalt():
         if(inst[i][0] != "hlt"):  
             if(inst[i][0][0:len(inst[i][0])-1] in labeld.keys()):
                 if(inst[i][1] == "hlt"):
-                    error.append(["last statment is not halt, hlt present at ", i+1])
+                    error.append(["hlt is not at last statment present at ", i+1])
                     return
         if(inst[i][0] == "hlt"):  # last statment is hlt
-             error.append(["last statment is not halt, hlt present at ", i+1])
-
-        
-
-    
+             error.append(["hlt is not at last statment present at", i+1])
 
 
 
@@ -109,11 +106,12 @@ def checklabelmatch():
     global error
     for i in labelc.keys():
         if(i not in labeld.keys()):
-            error.append(["Label is not defined",labelc[i] ])
+            error.append(["Label is not defined at line ",labelc[i] ])
         else:
             label[i] = labelc[i]
     labelc = label
     
+
 
 def labeladdress():
     for i in labeld.keys():
@@ -133,7 +131,8 @@ def checklabel(count2):
         # label called check
         if(inst[i][0] in ("jmp", "jlt", "jgt", "je")):  # if branch instructions
             if(len(inst[i]) == 2):  # length of instruction 2
-                if(inst[i][0] in labelc.keys()): 
+                if(inst[i][1] in labelc.keys()): 
+                    labelc[inst[i][1]].append(i-count2)
                     continue
                 if(alphanum(inst[i][1]) == False):  # is not valid
                     error.append(["Invalid label name", i+1])
@@ -148,14 +147,14 @@ def checklabel(count2):
                         error.append(["Syntax error", i+1])
                         flagb = False
                 if(flagb == True):
-                    labelc[inst[i][1]] = i-count2
+                    labelc[inst[i][1]] = [i-count2]
             else:
                 error.append(["Invalid instruction on line", i+1])
 
     for i in range(count2, len(inst)):
         flagb = True
         if(isvalidopcode(inst[i][0]) == False):# is not valid instruction name
-            if(len(inst[i]) <= 5):  # length of instruction > 5
+            if(len(inst[i]) <= 5 and len(inst[i])>=2):  # length of instruction > 5
                 if(inst[i][0][len(inst[i][0])-1] != ":"):           #last element is not :
                     error.append(["Invalid instruction on line", i+1])
                     flagb = False
