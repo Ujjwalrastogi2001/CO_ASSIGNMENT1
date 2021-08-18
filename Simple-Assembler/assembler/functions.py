@@ -1,7 +1,7 @@
 from allvar import *
 
 # check for validity of opcode
-def isvalid(opcode):
+def isvalidopcode(opcode):
     global validlist
     if opcode in validinst:
         return True
@@ -9,149 +9,171 @@ def isvalid(opcode):
         return False
 
 
-
-def getbin(i):           #inst is the ith element of inst list
-    global error
-    line = i
-    if(inst[line][0] == 'var'):        #if a var statment then return
-        return
-    if(inst[line][0][0:len(inst[i][0])-1]  in labeld.keys()):
-        if(len(inst[line][0])>=2):
-            if(isvalid(inst[line][1]) == False):         #check if a valid opcode 
-                error.append(["Invalid Opcode on line", i+1])       #if not append in error list and return
-            else:
-                callfunctions(inst[line][1::],line)   
-        else:
-            error.append(["Invalid syntax on line", line+1])   
-        return 
-    if(isvalid(inst[line][0]) == False):         #check if a valid opcode 
-        error.append(["Invalid Opcode on line", i+1])       #if not append in error list and return
-        return 
-    else:           #else call respective functions 
-        callfunctions(inst[line],line)
-        return
+# check if name is alphanumercal
+def alphanum(s):
+    flagb = True
+    for i in s:
+        if(not((i >= chr(65) and i <= chr(90)) or
+               (i >= chr(97) and i <= chr(122)) or (i >= chr(48) and i <= chr(57)) or i == "_")):
+            flagb = False
+            return flagb
+    return flagb
 
 
 
-#checked for validity of opcode and label 
-#now call respenctive functions and update binlist
-def callfunctions(insilist,line):        #insilist list of instruction for ith iteration
-    global binlist
-    global dictionfun
-    keyword=insilist[0]
-    rema=""
-    type=dictionfun[keyword]
-    if(keyword in dictionfun.keys()):   #the first element of list insilist is instruction
-        if(len(insilist)==2 and type=="E" ):
-            rema =convertBin(line, keyword,insilist[1])
-        elif(len(insilist)==3 and (type=="C" or type=="B" or type=="D" or type == ('B','C'))):
-            rema =convertBin(line, keyword,insilist[1],insilist[2])
-        elif(len(insilist)==4 and type=="A"):
-            rema =convertBin(line, keyword,insilist[1],insilist[2],insilist[3] )
-        elif(len(insilist)==1 and type=="F" ):
-            rema=convertBin(line, keyword)
-        else:
-            error.append(["Invalid Syntax",line+1])
-    if(rema != ""):
-        binlist.append(rema)
+# check for validity of variables
+# variable not at starting, repeating, invalid, a regisgter name used, a valid opcode used are handled
+def checkvar():
+    last = -1
+    flagb = True
+    for i in range(0, len(inst)):
+        flagb = True
+        # variable check
+        if(inst[i][0] == "var"):
+            if(len(inst[i]) == 2):
+                if(last+1 != i):  # last instruction was not variable
+                    error.append(
+                        ["All Variable not defined at the starting line", i+1])
+                    flagb = False
+                if(alphanum(inst[i][1]) == False):  # is not in valid list
+                    error.append(["Invalid Variable name", i+1])
+                    flagb = False
+                if(inst[i][1] in variables.keys()):  # is already defined
+                    error.append(["Variable name repeated", i+1])
+                    flagb = False
+                if(inst[i][1] in ("R0", "R1", "R2", "R3", "R4", "R5", "R6")):  # is a register name
+                    error.append(["Variable name Cannot be a register name", i+1])
+                    flagb = False
+                if(isvalidopcode(inst[i][1]) == True):# is a valid instruction name
+                    error.append(["Syntax error", i+1])
+                    flagb = False
+                if(flagb == True):  # if all conditions fails then is a valid variable
+                    variables[inst[i][1]] = i
+            else:  # length is not 2
+                error.append(["Invalid instruction on line", i+1])
+            last = i
     return
 
 
 
-#can delete last few linws
-def checkValue(r,line):
-    global error
-    if(r in ("R0","R1","R2","R3","R4","R5","R6")):
-        return "R"
-    elif( r == "FLAGS"):
-        error.append(["Invalid use of FLAGS register",line+1])
-        return "E"
-    elif(r[0] == "$"):
-        return "I"
-    else:
-        error.append(["Invalid register name",line+1])      
-        return "E"
+# find the address of variable
+# append at the third position of the inner list
+def variableaddress(count1):       
+    for i in variables.keys():
+        s = ''  # store address
+        c = count1+variables[i]
+        s = s + format(c, "b")
+        while(len(s) < 8):
+            s = '0'+s
+        variables[i] = [variables[i], s]  # append address in variables list
+    return
 
 
 
-# to check seconf register in mov 
-def checkreg(r,line):
-    if(r in ("R0","R1","R2","R3","R4","R5","R6","FLAGS")):
-        return "R"
-    elif(r[0] == "$"):
-        return "I"
-    else:
-        error.append(["Invalid register name",line+1])      
-        return "E"
- 
- 
-
-#convert to binary output line by line 
-def convertBin(line, keyword,var1=None,var2=None,var3=None):
-    global isa
-    global error
-    if(keyword=="mov"):
-        if(checkreg(var2,line)=="I"):
-            keyword="movi"
-            type="B"
+#multiple halt statment possible check it
+def checklasthalt():
+    if(inst[len(inst)-1][0] != "hlt"):  # last statment is not hlt
+        if(inst[len(inst)-1][0][0:len(inst[len(inst)-1][0])-1] in labeld.keys()):
+            if(inst[len(inst)-1][1] == "hlt"):  # last statment is hlt
+                if (len(inst[len(inst)-1]) != 2):  # len of instruction is not 2 label + hlt
+                    error.append(["Invalid instruction on line", len(inst)-1])
+                    return
         else:
-            keyword="movr"
-            type="C"
-    else:
-        type=dictionfun[keyword]
-    if(type=="A" and checkValue(var1,line) == "R" and checkValue(var2,line) == "R"and checkValue(var3,line) == "R"):
-        return isa[keyword]+"00"+reg[var1]+reg[var2]+reg[var3]  
+            error.append(["last statment is not halt ", len(inst)])
+            return
+    if(inst[len(inst)-1][0] == "hlt"):  # last statment is hlt
+        if (len(inst[len(inst)-1]) != 1):  # len of instruction is not 1
+            error.append(["Invalid instruction on line", len(inst)-1])
+            return
+    
+    for i in range(0,len(inst)-1):
+        if(inst[i][0] != "hlt"):  
+            if(inst[i][0][0:len(inst[i][0])-1] in labeld.keys()):
+                if(inst[i][1] == "hlt"):
+                    error.append(["hlt is not at last statment present at ", i+1])
+                    return
+        if(inst[i][0] == "hlt"):  # last statment is hlt
+             error.append(["hlt is not at last statment present at", i+1])
 
-    if(type=="B" and checkValue(var1,line) == "R" and checkValue(var2,line) == "I"):
-        if(float(var2[1::]) != int(float(var2[1::]))):
-            error.append(["A Imm must be a whole number <= 255 and >= 0",line+1])
-            return ""
-        if(int(var2[1::]) <= 0 or int(var2[1::])>= 255):
-            error.append(["A Imm must be a whole number <= 255 and >= 0",line+1])
-            return ""
-        st = format(int(var2[1::]),"b")
-        while(len(st) != 8):
-            st = '0'+st
-        return isa[keyword]+reg[var1]+st
 
-    if(type=="C" and keyword == "movr" and checkValue(var1,line) == "R" and var2 == "FLAGS"):
-        return isa[keyword]+"00000"+reg[var1]+reg[var2]
 
-    if(type=="C" and checkValue(var1,line) == "R" and checkValue(var2,line) == "R"):
-        return isa[keyword]+"00000"+reg[var1]+reg[var2]
-
-    if(type=="D" and checkValue(var1,line)):
-        if(var2 not in variables.keys()):
-            error.append(["A mem_addr in load and store must be a variable",line+1])
-            return ""
-        return isa[keyword]+reg[var1]+variables[var2][1]
-
-    if(type=="E"):              #branch
-        if(var1 not in labeld.keys()):
-            error.append(["A mem_addr in jump instructions must be a label",line+1])
-            return ""
-        return isa[keyword]+"000"+labeld[var1]
-
-    if(type=="F"):
-        return isa[keyword]+"00000000000"
+# check if all called label are defined label
+# not necessary that all defined label is called
+def checklabelmatch():
+    global labelc
+    global labeld
+    label = {}
+    global error
+    for i in labelc.keys():
+        if(i not in labeld.keys()):
+            error.append(["Label is not defined at line ",labelc[i] ])
+        else:
+            label[i] = labelc[i]
+    labelc = label
     
 
 
-#print at the end
-def printbin():
-    global error
-    global binlist
-    if(len(error)==0):          #no errors
-        for i in range(0,len(binlist)):
-            print(binlist[i])
-    else:
-       printerror()
-    return
+def labeladdress():
+    for i in labeld.keys():
+        s = ''  # store address
+        c = labeld[i]
+        s = s + format(c, "b")
+        while(len(s) < 8):
+            s = '0'+s
+        labeld[i] =  s
 
 
-#print error if any
-def printerror():    
-    if(len(error) != 0):
-        for i in range(0,len(error)):
-            print(error[i][0]+", "+str(error[i][1]))
-    return 0 if len(error) == 0 else 1
+
+#check multiple label with same name 
+def checklabel(count2):
+    for i in range(count2, len(inst)):
+        flagb = True
+        # label called check
+        if(inst[i][0] in ("jmp", "jlt", "jgt", "je")):  # if branch instructions
+            if(len(inst[i]) == 2):  # length of instruction 2
+                if(inst[i][1] in labelc.keys()): 
+                    labelc[inst[i][1]].append(i+1)
+                    continue
+                if(alphanum(inst[i][1]) == False):  # is not valid
+                    error.append(["Invalid label name", i+1])
+                    flagb = False
+                if(inst[i][1] in variables.keys() or inst[i][1] == "var" ):  # is a vaild variable name
+                    error.append(["Variable and Label name cannot be same", i+1])
+                    flagb = False
+                if(inst[i][1] in ("R0", "R1", "R2", "R3", "R4", "R5", "R6")):  # is a register name
+                    error.append(["Label name Cannot be a register name", i+1])
+                    flagb = False
+                if(isvalidopcode(inst[i][1]) == True):# is a valid instruction name
+                        error.append(["Syntax error", i+1])
+                        flagb = False
+                if(flagb == True):
+                    labelc[inst[i][1]] = [i+1]
+            else:
+                error.append(["Invalid instruction on line", i+1])
+
+    for i in range(count2, len(inst)):
+        flagb = True
+        if(isvalidopcode(inst[i][0]) == False):# is not valid instruction name
+            if(len(inst[i]) <= 5 and len(inst[i])>=2):  # length of instruction > 5
+                if(inst[i][0][len(inst[i][0])-1] != ":"):           #last element is not :
+                    error.append(["Invalid instruction on line", i+1])
+                    flagb = False
+                if(alphanum(inst[i][0][0:len(inst[i][0])-1]) == False):  # is not valid
+                    error.append(["Invalid label name", i+1])
+                    flagb = False
+                if(inst[i][0][0:len(inst[i][0])-1] in variables.keys()):  # is a vaild variable name
+                    error.append(["Variable and Label name cannot be same", i+1])
+                    flagb = False
+                if(inst[i][0][0:len(inst[i][0])-1] in ("R0", "R1", "R2", "R3", "R4", "R5", "R6")):  # is a register name
+                    error.append(["Label name Cannot be a register name", i+1])
+                    flagb = False
+                if(inst[i][0][0:len(inst[i][0])-1] in labeld.keys()):  # is already defined
+                    error.append(["Label name cannot be same", i+1])
+                    flagb = False
+                if(isvalidopcode(inst[i][0][0:len(inst[i][0])-1]) == True  or inst[i][1][0:len(inst[i][0])-2] == "var" ):# is a valid instruction name
+                    error.append(["Syntax error", i+1])
+                    flagb = False
+                if(flagb == True):
+                    labeld[inst[i][0][0:len(inst[i][0])-1]] = i+1
+            else:
+                error.append(["Invalid instruction on line", i+1])

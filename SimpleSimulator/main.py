@@ -1,4 +1,105 @@
+from variables import *
+from functions import *
+def mainfun():
+    initialize() # Load memory from stdin
+    PC = 0 # Start from the first instruction
+    halted = False
+    while(not halted):
+        Instruction = MEM[PC] # Get current instruction
+        halted, new_PC = execute(Instruction); # Update RF compute new_PC
+        PC.dump(); # Print PC
+        RF.dump(); # Print RF state
+        PC.update(new_PC); # Update PC
+    
+    MEM.dump() # Print memory state
+mainfun()
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+'''
 def add(l):
     """global binlist
     global reg
@@ -83,3 +184,4 @@ def hlt(l):
 
 def mov():
     pass
+'''
