@@ -60,11 +60,8 @@ def checkvar():
 # append at the third position of the inner list
 def variableaddress(count1):       
     for i in variables.keys():
-        s = ''  # store address
         c = count1+variables[i]
-        s = s + format(c, "b")
-        while(len(s) < 8):
-            s = '0'+s
+        s = s = '{0:08b}'.format(c) 
         variables[i] = [variables[i], s]  # append address in variables list
     return
 
@@ -115,11 +112,7 @@ def checklabelmatch():
 
 def labeladdress():
     for i in labeld.keys():
-        s = ''  # store address
-        c = labeld[i]
-        s = s + format(c, "b")
-        while(len(s) < 8):
-            s = '0'+s
+        s = '{0:08b}'.format(labeld[i])  # store address
         labeld[i] =  s
 
 
@@ -132,7 +125,7 @@ def checklabel(count2):
         if(inst[i][0] in ("jmp", "jlt", "jgt", "je")):  # if branch instructions
             if(len(inst[i]) == 2):  # length of instruction 2
                 if(inst[i][1] in labelc.keys()): 
-                    labelc[inst[i][1]].append(i-count2)
+                    labelc[inst[i][1]].append(i+1)
                     continue
                 if(alphanum(inst[i][1]) == False):  # is not valid
                     error.append(["Invalid label name", i+1])
@@ -147,7 +140,7 @@ def checklabel(count2):
                         error.append(["Syntax error", i+1])
                         flagb = False
                 if(flagb == True):
-                    labelc[inst[i][1]] = [i-count2]
+                    labelc[inst[i][1]] = [i+1]
             else:
                 error.append(["Invalid instruction on line", i+1])
 
