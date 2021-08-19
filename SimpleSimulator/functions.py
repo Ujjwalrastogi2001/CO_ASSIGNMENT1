@@ -8,71 +8,37 @@ def initialize():       #mem.initialize
             break
             
 def execute(instruction):          #ee.execute(INST)
-    opcode=instruction[0:5]    #first 5 digits
+    opcode=instruction[0:5]        #first 5 digits
     #find function using opcode
-    isa[str(opcode)](instruction)
+    op(instruction)
     
-def dump():     #printing the list or dic          
-    pass
-def update():           #PC.update
-    pass
+
+def dump():     #printing the list or dic         
+    print(inttobin(PC),end=" ")
+    for i in RF.keys():
+        print(inttobin(RF[i]),end=" ")
+    print()
 
 
-def add(instruction):
-    sum = RF[instruction[10:13]] + RF[instruction[13:16]]
-    if(sum > 2 ^ 16):
-        flag["V"] = 1
-        RF[instruction[7:10]] = sum - 2 ^ 16
-    else:
-        RF[instruction[7:10]] = sum
+def reset():
+    flag["V"] = flag["G"] =flag["E"] = flag["L"] = 0
 
-
-def sub(instruction):
-    sub = RF[instruction[10:13]]- RF[instruction[13:16]]
-    if(sub < 0 ):
-        flag["V"] = 1
-        RF[instruction[7:10]] = 0
-    else:
-        RF[instruction[7:10]] = sub
-
-
-def mul(instruction):
-    mult = RF[instruction[10:13]]*RF[instruction[13:16]]
-    if(mult > 2 ^ 16):
-        flag["V"] = 1
-        RF[instruction[7:10]] = mult % 2^16
-    else:
-        RF[instruction[7:10]] = mult
-
-
-def div(instruction):
-    quotient = int(RF[instruction[10:13]] / RF[instruction[13:16]])
-    remainder = RF[instruction[10:13]] % RF[instruction[13:16]]
-    RF["000"] = quotient
-    RF["001"] = remainder
-
-
-def xor(instruction):
-    pass
-    
-def 
-def movi(instruction):
-    pass
-
-def movr(instruction):
-    pass
-
+def inttobin(val):
+    return '{0:016b}'.format(val)
 #-----------------------------------------------------TYPE A------------------------------------------------------------------------------
 
 def add(r1,r2,r3):
+    reset()
     sum=RF[r2]+RF[r3]
-    if(sum > 2 ^ 16):
+    if(sum >= 2 ^ 16):
         flag["V"] = 1
         RF[r1] = sum - 2 ^ 16
     else:
         RF[r1] = sum
 
+
 def sub(r1,r2,r3):
+    reset()
     sub = RF[r2]- RF[r3]
     if(sub < 0 ):
         flag["V"] = 1
@@ -80,35 +46,49 @@ def sub(r1,r2,r3):
     else:
         RF[r1] = sub
 
+
 def mul(r1,r2,r3):
+    reset()
     mult = RF[r2]*RF[r3]
-    if(mult > 2 ^ 16):
+    if(mult >= 2 ^ 16):
         flag["V"] = 1
         RF[r1] = mult % 2^16
     else:
         RF[r1] = mult
 
+
 def xor(r1,r2,r3):
-    pass
+    reset()
+    bitxor = RF[r2]^RF[r3]
+    RF[r1] = bitxor
+
 
 def Or(r1,r2,r3):
-    pass
-def And(r1,r2,r3):
-    pass
+    reset()
+    bitor = RF[r2] | RF[r3]
+    RF[r1] = bitor
 
+
+def And(r1,r2,r3):
+    reset()
+    bitand = RF[r2] & RF[r3]
+    RF[r1] = bitand
 
 #-----------------------------------------------------TYPE B------------------------------------------------------------------------------
 
 
 
 def movi(r1,imm):
-    pass
+    reset()
+    RF[r1] = int(imm)
+
 def rs(r1,imm):
-    pass
+    reset()
+    RF[r1] >> int(imm)
+
 def ls(r1,imm):
-    pass
-def movr(r1,r2):
-    pass
+    reset()
+    RF[r1] << int(imm)
 
 
 #-----------------------------------------------------TYPE C------------------------------------------------------------------------------
@@ -116,40 +96,71 @@ def movr(r1,r2):
 
 
 def div(r1,r2):
+    reset()
     quotient = int(RF[r1] / RF[r2])
     remainder = RF[r1] % RF[r2]
     RF["000"] = quotient
     RF["001"] = remainder
 
 def Not(r1,r2):
-    pass
+    reset()
+    n = ~RF[r2]           
+    RF[r1] = n + 2**16
+
 def cmp(r1,r2):
-    pass
+    reset()
+    if(r1>r2):
+        flag["G"]=1
+    elif(r1<r2):
+        flag["L"]=1
+    else:
+        flag["E"]=1
+
+def movr(r1,r2):
+    reset()
+    RF[r1] = RF[r2]
 
 
 #-----------------------------------------------------TYPE D------------------------------------------------------------------------------
 
-
-
 def ld(r1,mem_add):
-    pass
+    reset()
+    RF[r1] = int(MEM[int(mem_add)])
 
 def st(r1,mem_add):
-    pass
+    reset()
+    MEM[int(mem_add)] = inttobin(RF[r1])
 
 
 #-----------------------------------------------------TYPE E------------------------------------------------------------------------------
 
 def jmp(mem_add):
-    pass
+    reset()
+    return int(mem_add)
 
 def jlt(mem_add):
-    pass
+    if(flag("L") == 1):
+        reset()
+        return int(mem_add)
+    else:
+        reset()
+        return PC+1
 
 def jgt(mem_add):
-    pass
+    if(flag("G") == 1):
+        reset()
+        return int(mem_add)
+    else:
+        reset()
+        return PC+1
+
 def je(mem_add):
-    pass
+    if(flag("E") == 1):
+        reset()
+        return int(mem_add)
+    else:
+        reset()
+        return PC+1
 
 
 #-----------------------------------------------------TYPE F------------------------------------------------------------------------------
@@ -162,6 +173,7 @@ def hlt():
 #------------------------------------------------------END---------------------------------------------------------------------------------
 
 def op(instruction):
+    global PC
     opcode=instruction[0:5]              #first 5 digits
     function=isa[opcode]                 
     type=dictionfun[function]
@@ -170,26 +182,29 @@ def op(instruction):
         r2=instruction[10:13]
         r3=instruction[13:16]
         function(r1,r2,r3)
-
+        PC+=1
 
     elif(type=="B"):
         r1=instruction[5:8]
         imm=instruction[8:16]
         function(r1,imm)
+        PC+=1
 
     elif(type=="C"):
         r1=instruction[10:13]
         r2=instruction[13:16]
         function(r1,r2)
+        PC+=1
     
     elif(type=="D"):
         r1=instruction[5:8]
         mem_add=instruction[8:16]
         function(r1,mem_add)
+        PC+=1
     
     elif(type=="E"):
         mem_add=instruction[8:16]
-        function(mem_add)
+        PC = function(mem_add)
     
     else: hlt()
         

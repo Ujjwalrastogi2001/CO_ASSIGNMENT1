@@ -60,11 +60,12 @@ def checkvar():
 # append at the third position of the inner list
 def variableaddress(count1):       
     for i in variables.keys():
-        s = ''  # store address
+        s = '{0:08b}'.format(val)
+        """s = ''  # store address
         c = count1+variables[i]
         s = s + format(c, "b")
         while(len(s) < 8):
-            s = '0'+s
+            s = '0'+s"""
         variables[i] = [variables[i], s]  # append address in variables list
     return
 
