@@ -216,28 +216,33 @@ def op(instruction):
         r2=instruction[10:13]
         r3=instruction[13:16]
         fundictionary[opcode](r1,r2,r3)
+        memList.append(PC)
         PC_new = PC + 1
 
     elif(type=="B"):
         r1=instruction[5:8]
         imm=instruction[8:16]
         fundictionary[opcode](r1,imm)
+        memList.append(PC)
         PC_new = PC + 1
 
     elif(type=="C"):
         r1=instruction[10:13]
         r2=instruction[13:16]
         fundictionary[opcode](r1,r2)
+        memList.append(PC)
         PC_new = PC + 1
     
     elif(type=="D"):
         r1=instruction[5:8]
         mem_add=instruction[8:16]
         fundictionary[opcode](r1,mem_add)
+        memList.append([PC, strtoint(mem_add)])
         PC_new = PC + 1
     
     elif(type=="E"):
         mem_add=instruction[8:16]
+        memList.append([PC, strtoint(mem_add)])
         PC_new = fundictionary[opcode](mem_add)
     
     else: hlt()
