@@ -30,10 +30,10 @@ def mainfun():
             st = st.strip()
             st = st.split()  #slpit instructions
 
-            #delete these line
-            if(st[0]== "EOF"):
-                break
-            #till here
+            # #delete these line
+            # if(st[0]== "EOF"):
+            #     break
+            # #till here
             if(st != [""]):    #if not a not a empty istruction then append in inst and increment count
                 inst.append(st)
                 count = count+1 
